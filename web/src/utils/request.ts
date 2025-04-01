@@ -1,11 +1,9 @@
+// src/utils/request.ts
 import { Authorization } from '@/constants/authorization';
 import { ResponseType } from '@/interfaces/database/base';
 import i18n from '@/locales/config';
-import authorizationUtil, {
-  getAuthorization,
-  redirectToLogin,
-} from '@/utils/authorization-util';
-import { message, notification } from 'antd';
+import { getAuthorization } from '@/utils/authorization-util';
+import { notification } from 'antd';
 import { RequestMethod, extend } from 'umi-request';
 import { convertTheKeysOfTheObjectToSnake } from './common-util';
 
@@ -77,10 +75,12 @@ const request: RequestMethod = extend({
   getResponse: true,
 });
 
+// src/utils/request.ts
 request.interceptors.request.use((url: string, options: any) => {
   const data = convertTheKeysOfTheObjectToSnake(options.data);
   const params = convertTheKeysOfTheObjectToSnake(options.params);
-
+  const authHeader = getAuthorization();
+  console.log('Request URL:', url, 'Authorization:', authHeader); // 调试
   return {
     url,
     options: {
@@ -88,9 +88,7 @@ request.interceptors.request.use((url: string, options: any) => {
       data,
       params,
       headers: {
-        ...(options.skipToken
-          ? undefined
-          : { [Authorization]: getAuthorization() }),
+        ...(options.skipToken ? undefined : { [Authorization]: authHeader }),
         ...options.headers,
       },
       interceptors: true,
@@ -99,35 +97,19 @@ request.interceptors.request.use((url: string, options: any) => {
 });
 
 request.interceptors.response.use(async (response: Response, options) => {
-  if (response?.status === 413 || response?.status === 504) {
-    message.error(RetcodeMessage[response?.status as ResultCode]);
-  }
-
-  if (options.responseType === 'blob') {
-    return response;
-  }
-
   const data: ResponseType = await response?.clone()?.json();
-  if (data?.code === 100) {
-    message.error(data?.message);
-  } else if (data?.code === 401) {
+  if (data?.code === 401) {
+    console.log('401 detected for URL:', response.url, 'Response:', data); // 调试
     notification.error({
       message: data?.message,
       description: data?.message,
       duration: 3,
     });
-    authorizationUtil.removeAll();
-    redirectToLogin();
-  } else if (data?.code !== 0) {
-    notification.error({
-      message: `${i18n.t('message.hint')} : ${data?.code}`,
-      description: data?.message,
-      duration: 3,
-    });
+    // authorizationUtil.removeAll(); // 已注释
+    // redirectToLogin(); // 已注释
   }
   return response;
 });
-
 export default request;
 
 export const get = (url: string) => {

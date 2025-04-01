@@ -1,3 +1,4 @@
+// src/services/user-service.ts
 import api from '@/utils/api';
 import registerServer from '@/utils/register-server';
 import request, { post } from '@/utils/request';
@@ -118,6 +119,10 @@ const methods = {
   deleteLangfuseConfig: {
     url: setLangfuseConfig,
     method: 'delete',
+  },
+  tokenLogin: {
+    url: '/v1/user/token-login', // 确保后端支持此接口
+    method: 'post',
   },
 } as const;
 

@@ -1,5 +1,7 @@
+// src/pages/knowledge/index.tsx
 import { useInfiniteFetchKnowledgeList } from '@/hooks/knowledge-hooks';
 import { useFetchUserInfo } from '@/hooks/user-setting-hooks';
+import authorizationUtil from '@/utils/authorization-util';
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -11,17 +13,17 @@ import {
   Space,
   Spin,
 } from 'antd';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { useNavigate } from 'umi';
 import { useSaveKnowledge } from './hooks';
+import styles from './index.less';
 import KnowledgeCard from './knowledge-card';
 import KnowledgeCreatingModal from './knowledge-creating-modal';
 
-import { useMemo } from 'react';
-import styles from './index.less';
-
 const KnowledgeList = () => {
-  const { data: userInfo } = useFetchUserInfo();
+  const { data: userInfo, error: userInfoError } = useFetchUserInfo();
   const { t } = useTranslation('translation', { keyPrefix: 'knowledgeList' });
   const {
     visible,
@@ -37,24 +39,33 @@ const KnowledgeList = () => {
     searchString,
     handleInputChange,
     loading,
+    error: knowledgeError,
   } = useInfiniteFetchKnowledgeList();
+  const navigate = useNavigate();
 
-  const nextList = useMemo(() => {
-    const list =
-      data?.pages?.flatMap((x) => (Array.isArray(x.kbs) ? x.kbs : [])) ?? [];
-    return list;
-  }, [data?.pages]);
+  useEffect(() => {
+    const auth = authorizationUtil.getAuthorization(); // 检查 Authorization
+    if (!auth) {
+      console.log('No authorization found, redirecting to login');
+      // navigate('/login');
+    } else {
+      console.log('Authorization found in Knowledge page:', auth);
+    }
+    if (userInfoError || knowledgeError) {
+      console.log('Data fetch error:', userInfoError || knowledgeError);
+    }
+  }, [navigate, userInfoError, knowledgeError]);
 
-  const total = useMemo(() => {
-    return data?.pages.at(-1).total ?? 0;
-  }, [data?.pages]);
+  const nextList =
+    data?.pages?.flatMap((x) => (Array.isArray(x.kbs) ? x.kbs : [])) ?? [];
+  const total = data?.pages?.at(-1)?.total ?? 0;
 
   return (
     <Flex className={styles.knowledge} vertical flex={1} id="scrollableDiv">
       <div className={styles.topWrapper}>
         <div>
           <span className={styles.title}>
-            {t('welcome')}, {userInfo.nickname}
+            {t('welcome')}, {userInfo?.nickname || 'User'}
           </span>
           <p className={styles.description}>{t('description')}</p>
         </div>
@@ -67,7 +78,6 @@ const KnowledgeList = () => {
             onChange={handleInputChange}
             prefix={<SearchOutlined />}
           />
-
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -93,16 +103,14 @@ const KnowledgeList = () => {
             className={styles.knowledgeCardContainer}
           >
             {nextList?.length > 0 ? (
-              nextList.map((item: any, index: number) => {
-                return (
-                  <KnowledgeCard
-                    item={item}
-                    key={`${item?.name}-${index}`}
-                  ></KnowledgeCard>
-                );
-              })
+              nextList.map((item: any, index: number) => (
+                <KnowledgeCard item={item} key={`${item?.name}-${index}`} />
+              ))
             ) : (
-              <Empty className={styles.knowledgeEmpty}></Empty>
+              <Empty
+                className={styles.knowledgeEmpty}
+                description="No data available"
+              />
             )}
           </Flex>
         </InfiniteScroll>
@@ -112,7 +120,7 @@ const KnowledgeList = () => {
         visible={visible}
         hideModal={hideModal}
         onOk={onCreateOk}
-      ></KnowledgeCreatingModal>
+      />
     </Flex>
   );
 };

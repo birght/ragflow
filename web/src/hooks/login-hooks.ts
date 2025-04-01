@@ -1,3 +1,4 @@
+// src/hooks/login-hooks.ts
 import { Authorization } from '@/constants/authorization';
 import userService from '@/services/user-service';
 import authorizationUtil, { redirectToLogin } from '@/utils/authorization-util';
@@ -16,6 +17,10 @@ export interface IRegisterRequestBody extends ILoginRequestBody {
   nickname: string;
 }
 
+export interface ITokenLoginRequestBody {
+  token: string;
+}
+
 export const useLogin = () => {
   const { t } = useTranslation();
 
@@ -27,6 +32,45 @@ export const useLogin = () => {
     mutationKey: ['login'],
     mutationFn: async (params: { email: string; password: string }) => {
       const { data: res = {}, response } = await userService.login(params);
+      if (res.code === 0) {
+        const { data } = res;
+        message.success(t('message.logged'));
+        const authorization =
+          response.headers.get(Authorization) || data.access_token;
+        const userInfo = {
+          avatar: data.avatar,
+          name: data.nickname,
+          email: data.email,
+        };
+        authorizationUtil.setItems({
+          Authorization: authorization,
+          Token: data.access_token,
+          userInfo: JSON.stringify(userInfo),
+        });
+        console.log(
+          'Login set Authorization:',
+          authorizationUtil.getAuthorization(),
+        );
+      }
+      return res.code;
+    },
+  });
+
+  return { data, loading, login: mutateAsync };
+};
+
+// 其他钩子保持不变
+export const useTokenLogin = () => {
+  const { t } = useTranslation();
+
+  const {
+    data,
+    isPending: loading,
+    mutateAsync,
+  } = useMutation({
+    mutationKey: ['tokenLogin'],
+    mutationFn: async (params: { token: string }) => {
+      const { data: res = {}, response } = await userService.tokenLogin(params);
       if (res.code === 0) {
         const { data } = res;
         message.success(t('message.logged'));
@@ -47,7 +91,7 @@ export const useLogin = () => {
     },
   });
 
-  return { data, loading, login: mutateAsync };
+  return { data, loading, tokenLogin: mutateAsync };
 };
 
 export const useRegister = () => {
@@ -67,8 +111,13 @@ export const useRegister = () => {
       const { data = {} } = await userService.register(params);
       if (data.code === 0) {
         message.success(t('message.registered'));
-      } else if (data.message && data.message.includes('registration is disabled')) {
-        message.error(t('message.registerDisabled') || 'User registration is disabled');
+      } else if (
+        data.message &&
+        data.message.includes('registration is disabled')
+      ) {
+        message.error(
+          t('message.registerDisabled') || 'User registration is disabled',
+        );
       }
       return data.code;
     },
@@ -102,7 +151,6 @@ export const useLogout = () => {
 export const useHandleSubmittable = (form: FormInstance) => {
   const [submittable, setSubmittable] = useState<boolean>(false);
 
-  // Watch all values
   const values = Form.useWatch([], form);
 
   useEffect(() => {

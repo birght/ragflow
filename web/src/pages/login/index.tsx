@@ -1,18 +1,20 @@
+// src/pages/login/index.tsx
+import { Domain } from '@/constants/common';
 import { useLogin, useRegister } from '@/hooks/login-hooks';
 import { useSystemConfig } from '@/hooks/system-hooks';
 import { rsaPsw } from '@/utils';
+import authorizationUtil from '@/utils/authorization-util';
 import { Button, Checkbox, Form, Input } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Icon, useNavigate } from 'umi';
-import RightPanel from './right-panel';
-
-import { Domain } from '@/constants/common';
+import { Icon, useLocation, useNavigate } from 'umi';
 import styles from './index.less';
+import RightPanel from './right-panel';
 
 const Login = () => {
   const [title, setTitle] = useState('login');
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, loading: signLoading } = useLogin();
   const { register, loading: registerLoading } = useRegister();
   const { t } = useTranslation('translation', { keyPrefix: 'login' });
@@ -21,21 +23,40 @@ const Login = () => {
   const registerEnabled = config?.registerEnabled !== 0;
 
   const changeTitle = () => {
-    if (title === 'login' && !registerEnabled) {
-      return;
-    }
+    if (title === 'login' && !registerEnabled) return;
     setTitle((title) => (title === 'login' ? 'register' : 'login'));
   };
   const [form] = Form.useForm();
 
   useEffect(() => {
     form.validateFields(['nickname']);
-  }, [form]);
+    const searchParams = new URLSearchParams(location.search);
+    const token = searchParams.get('token');
+    if (token) {
+      console.log('Token detected:', token);
+      // 判断 token 是否已是 JWT 格式
+      const isJWT = token.split('.').length === 3;
+      const authValue = isJWT ? token : `Bearer ${token}`; // 如果不是 JWT，添加 Bearer 前缀
+      authorizationUtil.setItems({
+        Authorization: authValue,
+        Token: token, // 保留原始 token
+        userInfo: JSON.stringify({
+          email: 'hero@shiwanyu.com',
+          name: 'Hero',
+          avatar: '',
+        }),
+      });
+      console.log(
+        'Stored Authorization:',
+        authorizationUtil.getAuthorization(),
+      );
+      navigate('/knowledge', { replace: true });
+    }
+  }, [form, location.search]);
 
   const onCheck = async () => {
     try {
       const params = await form.validateFields();
-
       const rsaPassWord = rsaPsw(params.password) as string;
 
       if (title === 'login') {
@@ -44,6 +65,10 @@ const Login = () => {
           password: rsaPassWord,
         });
         if (code === 0) {
+          console.log(
+            'Login successful, Authorization:',
+            authorizationUtil.getAuthorization(),
+          );
           navigate('/knowledge');
         }
       } else {
@@ -59,10 +84,6 @@ const Login = () => {
     } catch (errorInfo) {
       console.log('Failed:', errorInfo);
     }
-  };
-  const formItemLayout = {
-    labelCol: { span: 6 },
-    // wrapperCol: { span: 8 },
   };
 
   const toGoogle = () => {
@@ -90,7 +111,6 @@ const Login = () => {
             style={{ maxWidth: 600 }}
           >
             <Form.Item
-              {...formItemLayout}
               name="email"
               label={t('emailLabel')}
               rules={[{ required: true, message: t('emailPlaceholder') }]}
@@ -99,7 +119,6 @@ const Login = () => {
             </Form.Item>
             {title === 'register' && (
               <Form.Item
-                {...formItemLayout}
                 name="nickname"
                 label={t('nicknameLabel')}
                 rules={[{ required: true, message: t('nicknamePlaceholder') }]}
@@ -108,7 +127,6 @@ const Login = () => {
               </Form.Item>
             )}
             <Form.Item
-              {...formItemLayout}
               name="password"
               label={t('passwordLabel')}
               rules={[{ required: true, message: t('passwordPlaceholder') }]}
@@ -121,7 +139,7 @@ const Login = () => {
             </Form.Item>
             {title === 'login' && (
               <Form.Item name="remember" valuePropName="checked">
-                <Checkbox> {t('rememberMe')}</Checkbox>
+                <Checkbox>{t('rememberMe')}</Checkbox>
               </Form.Item>
             )}
             <div>
@@ -153,21 +171,7 @@ const Login = () => {
             </Button>
             {title === 'login' && (
               <>
-                {/* <Button
-                  block
-                  size="large"
-                  onClick={toGoogle}
-                  style={{ marginTop: 15 }}
-                >
-                  <div>
-                    <Icon
-                      icon="local:google"
-                      style={{ verticalAlign: 'middle', marginRight: 5 }}
-                    />
-                    Sign in with Google
-                  </div>
-                </Button> */}
-                {location.host === Domain && (
+                {window.location.host === Domain && (
                   <Button
                     block
                     size="large"
@@ -189,7 +193,7 @@ const Login = () => {
         </div>
       </div>
       <div className={styles.loginRight}>
-        <RightPanel></RightPanel>
+        <RightPanel />
       </div>
     </div>
   );
