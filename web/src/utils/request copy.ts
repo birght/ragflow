@@ -1,4 +1,3 @@
-// src/utils/request.ts
 import { Authorization } from '@/constants/authorization';
 import { ResponseType } from '@/interfaces/database/base';
 import i18n from '@/locales/config';
@@ -96,7 +95,7 @@ request.interceptors.request.use((url: string, options: any) => {
   };
 });
 
-request.interceptors.response.use(async (response: Response) => {
+request.interceptors.response.use(async (response: Response, options) => {
   const data: ResponseType = await response?.clone()?.json();
   if (data?.code === 401) {
     console.log('401 detected for URL:', response.url, 'Response:', data); // 调试

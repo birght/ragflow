@@ -1,6 +1,7 @@
-let api_host = `/v1`;
-
-export { api_host };
+// let api_host = `/v1`;
+const API_BASE = process.env.UMI_API_BASE || '/ragflow/api';
+export const api_host = `${API_BASE}/v1`;
+// export { api_host };
 
 export default {
   // user

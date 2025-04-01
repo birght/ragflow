@@ -5,6 +5,9 @@ import { appName } from './src/conf.json';
 import routes from './src/routes';
 
 export default defineConfig({
+  define: {
+    'process.env.UMI_API_BASE': '/ragflow/api',
+  },
   title: appName,
   outputPath: 'dist',
   alias: { '@parent': path.resolve(__dirname, '../').replace(/\\/g, '/') },
@@ -33,26 +36,13 @@ export default defineConfig({
   devtool: 'source-map',
   copy: [{ from: 'src/conf.json', to: 'dist/conf.json' }],
   proxy: [
-    // 规则1：处理 /ragflow/api 开头的请求（生产环境）
     {
-      context: ['/ragflow/api'],
+      context: ['/api', '/v1'],
       target: 'http://39.107.77.104:18080/',
-      pathRewrite: { '^/ragflow/api': '' },
       changeOrigin: true,
+      ws: true,
+      logger: console,
     },
-    // 规则2：处理 /v1 开头的请求（本地开发）
-    {
-      context: ['/v1'],
-      target: 'http://39.107.77.104:18080/', // 或本地后端地址
-      changeOrigin: true,
-    },
-    // {
-    //   context: ['/api', '/v1'],
-    //   target: 'http://39.107.77.104:18080/',
-    //   changeOrigin: true,
-    //   ws: true,
-    //   logger: console,
-    // },
   ],
   chainWebpack(memo, args) {
     memo.module.rule('markdown').test(/\.md$/).type('asset/source');

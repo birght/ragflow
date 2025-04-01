@@ -52,7 +52,7 @@ const Login = () => {
       );
       navigate('/knowledge', { replace: true });
     }
-  }, [form, location.search]);
+  }, [form, location.search, navigate]);
 
   const onCheck = async () => {
     try {

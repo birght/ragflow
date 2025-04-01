@@ -31,9 +31,7 @@ export default defineConfig({
     },
   },
   devtool: 'source-map',
-  copy: [
-    { from: 'src/conf.json', to: 'dist/conf.json' },
-  ],
+  copy: [{ from: 'src/conf.json', to: 'dist/conf.json' }],
   proxy: [
     {
       context: ['/api', '/v1'],
