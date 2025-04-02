@@ -65,7 +65,8 @@ const KnowledgeList = () => {
       <div className={styles.topWrapper}>
         <div>
           <span className={styles.title}>
-            {t('welcome')}, {userInfo?.nickname || 'User'}
+            {t('welcome')}
+            {/* , {userInfo?.nickname || 'User'} */}
           </span>
           <p className={styles.description}>{t('description')}</p>
         </div>
