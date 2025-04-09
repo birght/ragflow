@@ -12,9 +12,9 @@ export default defineConfig({
   outputPath: 'dist',
   alias: { '@parent': path.resolve(__dirname, '../').replace(/\\/g, '/') },
   npmClient: 'npm',
-  base: '/ragflow/', // 调整为部署路径
+  base: '/', // 调整为部署路径
   routes,
-  publicPath: '/ragflow/', // 调整静态资源路径
+  publicPath: '/', // 调整静态资源路径
   esbuildMinifyIIFE: true,
   icons: {},
   hash: true,
