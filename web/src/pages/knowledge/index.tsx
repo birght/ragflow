@@ -44,15 +44,20 @@ const KnowledgeList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const auth = authorizationUtil.getAuthorization(); // 检查 Authorization
+    const auth = authorizationUtil.getAuthorization();
     if (!auth) {
       console.log('No authorization found, redirecting to login');
-      // navigate('/login');
+      navigate('/login', { replace: true });
     } else {
-      console.log('Authorization found in Knowledge page:', auth);
+      console.log('Authorization found:', auth);
     }
     if (userInfoError || knowledgeError) {
       console.log('Data fetch error:', userInfoError || knowledgeError);
+      if (knowledgeError?.status === 401) {
+        console.log('Unauthorized, redirecting to login');
+        authorizationUtil.clear();
+        navigate('/login', { replace: true });
+      }
     }
   }, [navigate, userInfoError, knowledgeError]);
 

@@ -12,58 +12,58 @@ const Login = () => {
   const { login } = useLogin();
 
   // 定义默认的账号密码
-  const DEFAULT_EMAIL = 'hero@shiwanyu.com'; // 替换为你的邮箱
+  const DEFAULT_EMAIL = 'ma.k@neusoft.com'; // 替换为你的邮箱
   const DEFAULT_PASSWORD = '1qaz!QAZ'; // 替换为你的密码
 
   // 自动登录函数
-  const autoLogin = async () => {
-    try {
-      const rsaPassWord = rsaPsw(DEFAULT_PASSWORD) as string;
-      const code = await login({
-        email: DEFAULT_EMAIL.trim(),
-        password: rsaPassWord,
-      });
+ const autoLogin = async () => {
+   try {
+     const rsaPassWord = rsaPsw(DEFAULT_PASSWORD) as string;
+     const code = await login({
+       email: DEFAULT_EMAIL.trim(),
+       password: rsaPassWord,
+     });
+     if (code === 0) {
+       console.log(
+         'Auto login successful, Authorization:',
+         authorizationUtil.getAuthorization(),
+       );
+       navigate('/knowledge', { replace: true });
+     } else {
+       console.error('Login failed with code:', code);
+     }
+   } catch (error) {
+     console.error('Auto login failed:', error);
+   }
+ };
 
-      if (code === 0) {
-        console.log(
-          'Auto login successful, Authorization:',
-          authorizationUtil.getAuthorization(),
-        );
-        navigate('/knowledge', { replace: true });
-      }
-    } catch (error) {
-      console.error('Auto login failed:', error);
-    }
-  };
+ useEffect(() => {
+   if (authorizationUtil.getAuthorization()) {
+     navigate('/knowledge', { replace: true });
+     return;
+   }
 
-  useEffect(() => {
-    // 检查是否已有授权
-    if (authorizationUtil.getAuthorization()) {
-      navigate('/knowledge', { replace: true });
-      return;
-    }
-
-    // 处理URL中的token
-    const searchParams = new URLSearchParams(location.search);
-    const token = searchParams.get('token');
-    if (token) {
-      const isJWT = token.split('.').length === 3;
-      const authValue = isJWT ? token : `Bearer ${token}`;
-      authorizationUtil.setItems({
-        Authorization: authValue,
-        Token: token,
-        userInfo: JSON.stringify({
-          email: 'hero@shiwanyu.com',
-          name: 'Hero',
-          avatar: '',
-        }),
-      });
-      navigate('/knowledge', { replace: true });
-    } else {
-      // 没有token时自动登录
-      autoLogin();
-    }
-  }, [location.search, navigate]);
+   const searchParams = new URLSearchParams(location.search);
+   const token = searchParams.get('token');
+   if (token) {
+     const isJWT = token.split('.').length === 3;
+     const authValue = isJWT ? token : `Bearer ${token}`;
+     const tokenId = token.split('.')[0].replace(/^"|"$/g, '');
+     authorizationUtil.setItems({
+       Authorization: authValue,
+       Token: tokenId,
+       userInfo: JSON.stringify({
+         email: 'ma.k@neusoft.com',
+         name: 'Hero',
+         avatar: '',
+       }),
+     });
+     console.log('Set Authorization:', authValue, 'Token:', tokenId);
+     navigate('/knowledge', { replace: true });
+   } else {
+     autoLogin();
+   }
+ }, [location.search, navigate]);
 
   return (
     <div className={styles.loginPage}>

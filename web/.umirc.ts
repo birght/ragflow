@@ -38,7 +38,7 @@ export default defineConfig({
   proxy: [
     {
       context: ['/api', '/v1'],
-      target: 'http://39.107.77.104:18080/',
+      target: 'http://192.168.66.100:9080/',
       changeOrigin: true,
       ws: true,
       logger: console,
