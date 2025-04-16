@@ -2,11 +2,13 @@
 import { Authorization } from '@/constants/authorization';
 import { ResponseType } from '@/interfaces/database/base';
 import i18n from '@/locales/config';
-import { getAuthorization } from '@/utils/authorization-util';
+import authorizationUtil, {
+  getAuthorization,
+  redirectToLogin,
+} from '@/utils/authorization-util';
 import { notification } from 'antd';
 import { RequestMethod, extend } from 'umi-request';
 import { convertTheKeysOfTheObjectToSnake } from './common-util';
-
 const FAILED_TO_FETCH = 'Failed to fetch';
 
 const RetcodeMessage = {
@@ -100,13 +102,13 @@ request.interceptors.response.use(async (response: Response) => {
   const data: ResponseType = await response?.clone()?.json();
   if (data?.code === 401) {
     console.log('401 detected for URL:', response.url, 'Response:', data); // 调试
-    notification.error({
-      message: data?.message,
-      description: data?.message,
-      duration: 3,
-    });
-    // authorizationUtil.removeAll(); // 已注释
-    // redirectToLogin(); // 已注释
+    // notification.error({
+    //   message: data?.message,
+    //   description: data?.message,
+    //   duration: 3,
+    // });
+    authorizationUtil.removeAll(); // 已注释
+    redirectToLogin(); // 已注释
   }
   return response;
 });
