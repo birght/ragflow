@@ -36,20 +36,9 @@ export default defineConfig({
   devtool: 'source-map',
   copy: [{ from: 'src/conf.json', to: 'dist/conf.json' }],
   proxy: [
-    // {
-    //   context: ['/api', '/v1'],
-    //   target: 'http://39.107.77.104:18080/',
-    //   changeOrigin: true,
-    //   ws: true,
-    //   logger: console,
-    //   pathRewrite: { '^/api': '', '^/v1': '' },
-    //   router: function (req) {
-    //     return 'http://39.107.77.104:18080';
-    //   },
-    // },
     {
       context: ['/api', '/v1'],
-      target: 'http://10.71.44.79:80/',
+      target: 'http://192.168.66.100:580/',
       changeOrigin: true,
       ws: true,
       logger: console,

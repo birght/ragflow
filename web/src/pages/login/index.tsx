@@ -1,7 +1,7 @@
 import { useLogin } from '@/hooks/login-hooks';
 import { rsaPsw } from '@/utils';
 import authorizationUtil from '@/utils/authorization-util';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'umi';
 import styles from './index.less';
 import RightPanel from './right-panel';
@@ -11,10 +11,10 @@ const Login = () => {
   const location = useLocation();
   const { login } = useLogin();
 
-  const DEFAULT_EMAIL = 'ma.k@neusoft.com';
+  const DEFAULT_EMAIL = 'yanshi@neusoft.com';
   const DEFAULT_PASSWORD = '1qaz!QAZ';
 
-  const autoLogin = async () => {
+  const autoLogin = useCallback(async () => {
     if (authorizationUtil.getAuthorization()) {
       navigate('/knowledge', { replace: true });
       return;
@@ -33,7 +33,7 @@ const Login = () => {
     } catch (error) {
       console.error('Auto login failed:', error);
     }
-  };
+  }, [login, navigate]);
 
   useEffect(() => {
     const existingAuth = authorizationUtil.getAuthorization();
@@ -52,8 +52,8 @@ const Login = () => {
         Authorization: authValue,
         Token: tokenId,
         userInfo: JSON.stringify({
-          email: 'ma.k@neusoft.com',
-          name: 'Hero',
+          email: 'yanshi@neusoft.com',
+          name: '演示用户',
           avatar: '',
         }),
       });
@@ -61,7 +61,7 @@ const Login = () => {
     } else {
       autoLogin();
     }
-  }, [location.search, navigate]);
+  }, [autoLogin, location.search, navigate]);
 
   return (
     <div className={styles.loginPage}>
