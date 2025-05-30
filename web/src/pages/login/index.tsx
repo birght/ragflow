@@ -11,7 +11,7 @@ const Login = () => {
   const location = useLocation();
   const { login } = useLogin();
 
-  const DEFAULT_EMAIL = 'yanshi@neusoft.com';
+  const DEFAULT_EMAIL = 'ma.k@neusoft.com';
   const DEFAULT_PASSWORD = '1qaz!QAZ';
 
   const autoLogin = useCallback(async () => {
@@ -52,7 +52,7 @@ const Login = () => {
         Authorization: authValue,
         Token: tokenId,
         userInfo: JSON.stringify({
-          email: 'yanshi@neusoft.com',
+          email: 'ma.k@neusoft.com',
           name: '演示用户',
           avatar: '',
         }),
