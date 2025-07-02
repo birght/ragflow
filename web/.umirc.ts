@@ -12,9 +12,9 @@ export default defineConfig({
   outputPath: 'dist',
   alias: { '@parent': path.resolve(__dirname, '../').replace(/\\/g, '/') },
   npmClient: 'npm',
-  base: '/', // 调整为部署路径
+  base: '/knowledge/', // 调整为 Nginx 的 location 路径
   routes,
-  publicPath: '/', // 调整静态资源路径
+  publicPath: '/knowledge/', // 调整静态资源路径
   esbuildMinifyIIFE: true,
   icons: {},
   hash: true,
@@ -38,7 +38,7 @@ export default defineConfig({
   proxy: [
     {
       context: ['/api', '/v1'],
-      target: 'http://192.168.66.100:9080/',
+      target: 'http://10.71.44.79:80/',
       changeOrigin: true,
       ws: true,
       logger: console,
